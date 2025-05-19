@@ -142,11 +142,11 @@
   </div>
 </template>
 
-<script setup >
+<script  setup>
 import { ref, computed, onMounted } from 'vue'
 import { PlusIcon } from '@heroicons/vue/24/outline'
 import { storeToRefs } from 'pinia'
-import { useTicketStore, type TicketType } from '@/stores/ticket'
+import { useTicketStore } from '@/stores/ticket'
 import TicketTypeFormModal from '@/components/ticket/TicketTypeFormModal.vue'
 import DeleteConfirmModal from '@/components/common/DeleteConfirmModal.vue'
 
@@ -165,7 +165,7 @@ const searchQuery = ref('')
 // 모달 상태
 const showFormModal = ref(false)
 const showDeleteModal = ref(false)
-const selectedTicketType = ref<TicketType | null>(null)
+const selectedTicketType = ref(null)
 
 // 필터링된 수강권 유형 목록
 const filteredTicketTypes = computed(() => {
@@ -189,7 +189,7 @@ const filteredTicketTypes = computed(() => {
 })
 
 // 상태 스타일 및 라벨
-const getStatusClass = (status: TicketType['status']) => {
+const getStatusClass = (status) => {
   const classes = {
     'active': 'bg-green-100 text-green-800',
     'inactive': 'bg-red-100 text-red-800'
@@ -197,7 +197,7 @@ const getStatusClass = (status: TicketType['status']) => {
   return classes[status]
 }
 
-const getStatusLabel = (status: TicketType['status']) => {
+const getStatusLabel = (status) => {
   const labels = {
     'active': '활성',
     'inactive': '비활성'
@@ -206,7 +206,7 @@ const getStatusLabel = (status: TicketType['status']) => {
 }
 
 // 가격 포맷팅
-const formatPrice = (price: number) => {
+const formatPrice = (price) => {
   return new Intl.NumberFormat('ko-KR', { 
     style: 'currency', 
     currency: 'KRW'
@@ -219,7 +219,7 @@ const openCreateModal = () => {
   showFormModal.value = true
 }
 
-const editTicketType = (ticketType: TicketType) => {
+const editTicketType = (ticketType) => {
   selectedTicketType.value = ticketType
   showFormModal.value = true
 }
@@ -229,7 +229,7 @@ const closeFormModal = () => {
   selectedTicketType.value = null
 }
 
-const confirmDelete = (ticketType: TicketType) => {
+const confirmDelete = (ticketType) => {
   selectedTicketType.value = ticketType
   showDeleteModal.value = true
 }
@@ -240,7 +240,7 @@ const closeDeleteModal = () => {
 }
 
 // CRUD 메서드
-const handleSubmit = async (formData: Omit<TicketType, 'id' | 'createdAt' | 'updatedAt'>) => {
+const handleSubmit = async (formData) => {
   try {
     if (selectedTicketType.value) {
       await ticketStore.updateTicketType(selectedTicketType.value.id, formData)

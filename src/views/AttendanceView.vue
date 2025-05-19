@@ -82,7 +82,7 @@
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm text-gray-900">
-                      {{ formatTime(new Date(attendance.date)) }}
+                      {{ formatTime(attendance.date) }}
                     </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
@@ -216,10 +216,10 @@
   </div>
 </template>
 
-<script setup >
+<script  setup>
 import { ref, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useAttendanceStore, type Attendance } from '@/stores/attendance'
+import { useAttendanceStore } from '@/stores/attendance'
 import { useClassStore } from '@/stores/class'
 import { useMemberStore } from '@/stores/member'
 import { formatDateTime, formatTime } from '@/utils/date'
@@ -255,7 +255,7 @@ const availableStatuses = [
 ]
 
 // 출석 상태 스타일 및 라벨
-const getStatusClass = (status: Attendance['status']) => {
+const getStatusClass = (status) => {
   const classes = {
     'present': 'bg-green-100 text-green-800',
     'late': 'bg-yellow-100 text-yellow-800',
@@ -265,7 +265,7 @@ const getStatusClass = (status: Attendance['status']) => {
   return classes[status]
 }
 
-const getStatusLabel = (status: Attendance['status']) => {
+const getStatusLabel = (status) => {
   const labels = {
     'present': '출석',
     'late': '지각',
@@ -291,7 +291,7 @@ const fetchAttendancesForDate = async () => {
 }
 
 // 출석 상태 변경
-const updateStatus = async (attendanceId: number, status: Attendance['status']) => {
+const updateStatus = async (attendanceId, status) => {
   try {
     await attendanceStore.updateAttendanceStatus(attendanceId, status)
   } catch (error) {
@@ -307,8 +307,8 @@ const handleManualCheck = async () => {
   try {
     await attendanceStore.checkAttendance({
       classId: Number(manualForm.value.classId),
-      memberId: Number(manualForm.value.memberId),
-      status: manualForm.value.status as Attendance['status']
+      memberId: manualForm.value.memberId,
+      status: manualForm.value.status
     })
     
     // 폼 초기화

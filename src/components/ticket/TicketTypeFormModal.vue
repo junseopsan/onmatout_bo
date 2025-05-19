@@ -1,52 +1,58 @@
 <template>
-  <BaseModal :model-value="true" title="수강권 유형" @update:model-value="$emit('close')">
+  <BaseModal :model-value="true" title="수강권 유형 등록" @update:model-value="$emit('close')">
     <form @submit.prevent="handleSubmit" class="space-y-4">
       <div>
         <label for="name" class="block text-sm font-medium text-gray-700">
-          이름 <span class="text-red-500">*</span>
+          수강권 이름 <span class="text-red-500">*</span>
         </label>
-        <BaseInput
+        <input
           id="name"
           v-model="form.name"
           type="text"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
           required
-          :error="errors.name"
         />
       </div>
+
       <div>
         <label for="price" class="block text-sm font-medium text-gray-700">
           가격 <span class="text-red-500">*</span>
         </label>
-        <BaseInput
+        <input
           id="price"
-          v-model="form.price"
+          v-model.number="form.price"
           type="number"
+          min="0"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
           required
-          :error="errors.price"
         />
       </div>
+
       <div>
         <label for="count" class="block text-sm font-medium text-gray-700">
           횟수 <span class="text-red-500">*</span>
         </label>
-        <BaseInput
+        <input
           id="count"
-          v-model="form.count"
+          v-model.number="form.count"
           type="number"
+          min="1"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
           required
-          :error="errors.count"
         />
       </div>
+
       <div>
         <label for="validDays" class="block text-sm font-medium text-gray-700">
           유효기간(일) <span class="text-red-500">*</span>
         </label>
-        <BaseInput
+        <input
           id="validDays"
-          v-model="form.validDays"
+          v-model.number="form.validDays"
           type="number"
+          min="1"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
           required
-          :error="errors.validDays"
         />
       </div>
     </form>
@@ -56,7 +62,7 @@
         class="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
         @click="handleSubmit"
       >
-        저장
+        {{ props.ticketTypeData ? '수정' : '등록' }}
       </button>
       <button
         type="button"
@@ -69,85 +75,39 @@
   </BaseModal>
 </template>
 
-<script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { useTicketStore } from '@/stores/ticket'
+<script setup>
+import { ref, onMounted } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
-import BaseInput from '@/components/common/BaseInput.vue'
 
-interface TicketType {
-  id?: number
-  name: string
-  price: number
-  count: number
-  validDays: number
-}
-
-const props = defineProps<{
-  ticketTypeData: TicketType | null
-}>()
-
-const emit = defineEmits<{
-  (e: 'close'): void
-  (e: 'submit', data: TicketType): void
-}>()
-
-const ticketStore = useTicketStore()
-
-const form = reactive<TicketType>({
-  name: props.ticketTypeData?.name || '',
-  price: props.ticketTypeData?.price || 0,
-  count: props.ticketTypeData?.count || 0,
-  validDays: props.ticketTypeData?.validDays || 0
+const props = defineProps({
+  ticketTypeData: {
+    type: Object,
+    default: null
+  }
 })
 
-const errors = reactive({
+const emit = defineEmits(['close', 'submit'])
+
+const form = ref({
   name: '',
-  price: '',
-  count: '',
-  validDays: ''
+  price: 0,
+  count: 1,
+  validDays: 30
 })
 
-const validate = () => {
-  let isValid = true
-  errors.name = ''
-  errors.price = ''
-  errors.count = ''
-  errors.validDays = ''
+onMounted(() => {
+  if (props.ticketTypeData) {
+    form.value = { ...props.ticketTypeData }
+  }
+})
 
-  if (!form.name) {
-    errors.name = '이름을 입력해주세요'
-    isValid = false
-  }
-  if (!form.price || form.price <= 0) {
-    errors.price = '가격을 입력해주세요'
-    isValid = false
-  }
-  if (!form.count || form.count <= 0) {
-    errors.count = '횟수를 입력해주세요'
-    isValid = false
-  }
-  if (!form.validDays || form.validDays <= 0) {
-    errors.validDays = '유효기간을 입력해주세요'
-    isValid = false
-  }
-
-  return isValid
-}
-
-const handleSubmit = async () => {
-  if (!validate()) return
-
-  try {
-    if (props.ticketTypeData?.id) {
-      await ticketStore.updateTicketType(props.ticketTypeData.id, form)
-    } else {
-      await ticketStore.createTicketType(form)
-    }
-    emit('submit', form)
-    emit('close')
-  } catch (error) {
-    console.error('Error saving ticket type:', error)
-  }
+const handleSubmit = () => {
+  if (!form.value.name || !form.value.price || !form.value.count || !form.value.validDays) return
+  
+  emit('submit', {
+    ...form.value,
+    id: props.ticketTypeData?.id
+  })
+  emit('close')
 }
 </script> 

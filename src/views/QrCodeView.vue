@@ -126,13 +126,14 @@
   </div>
 </template>
 
-<script setup >
+<script  setup>
 import { ref, computed, onMounted } from 'vue'
 import { PlusIcon, ArrowDownTrayIcon, TrashIcon } from '@heroicons/vue/24/outline'
-import { useQRCodeStore, type QRCode } from '@/stores/qrCode'
+import { useQRCodeStore } from '@/stores/qrCode'
 import QRCodeCreateModal from '@/components/qrCode/QRCodeCreateModal.vue'
 import DeleteConfirmModal from '@/components/common/DeleteConfirmModal.vue'
 import { formatDateTime } from '@/utils/date'
+import { storeToRefs } from 'pinia'
 
 const qrCodeStore = useQRCodeStore()
 const { qrCodes, loading, error } = storeToRefs(qrCodeStore)
@@ -149,7 +150,7 @@ const searchQuery = ref('')
 // 모달 상태
 const showModal = ref(false)
 const showDeleteModal = ref(false)
-const selectedQRCode = ref<QRCode | null>(null)
+const selectedQRCode = ref(null)
 
 // 필터링된 QR 코드 목록
 const filteredQRCodes = computed(() => {
@@ -172,7 +173,7 @@ const filteredQRCodes = computed(() => {
 })
 
 // 상태 스타일 및 라벨
-const getStatusClass = (status: QRCode['status']) => {
+const getStatusClass = (status) => {
   const classes = {
     'active': 'bg-green-100 text-green-800',
     'expired': 'bg-red-100 text-red-800'
@@ -180,7 +181,7 @@ const getStatusClass = (status: QRCode['status']) => {
   return classes[status]
 }
 
-const getStatusLabel = (status: QRCode['status']) => {
+const getStatusLabel = (status) => {
   const labels = {
     'active': '활성',
     'expired': '만료'
@@ -197,7 +198,7 @@ const closeModal = () => {
   showModal.value = false
 }
 
-const confirmDelete = (qrCode: QRCode) => {
+const confirmDelete = (qrCode) => {
   selectedQRCode.value = qrCode
   showDeleteModal.value = true
 }
@@ -208,7 +209,7 @@ const closeDeleteModal = () => {
 }
 
 // CRUD 메서드
-const handleSubmit = async (classId: number) => {
+const handleSubmit = async (classId) => {
   try {
     await qrCodeStore.createQRCode(classId)
     closeModal()
@@ -228,7 +229,7 @@ const handleDelete = async () => {
   }
 }
 
-const handleDownload = async (qrCode: QRCode) => {
+const handleDownload = async (qrCode) => {
   try {
     await qrCodeStore.downloadQRCode(qrCode.id)
   } catch (error) {

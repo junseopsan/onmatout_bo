@@ -37,24 +37,16 @@
   </BaseModal>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, onMounted } from 'vue'
 import { useClassStore } from '@/stores/class'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-interface Class {
-  id: number
-  name: string
-}
-
-const emit = defineEmits<{
-  (e: 'close'): void
-  (e: 'submit', classId: number): void
-}>()
+const emit = defineEmits(['close', 'submit'])
 
 const classStore = useClassStore()
-const classes = ref<Class[]>([])
-const selectedClassId = ref<number | ''>('')
+const classes = ref([])
+const selectedClassId = ref('')
 
 onMounted(async () => {
   try {
@@ -67,7 +59,7 @@ onMounted(async () => {
 
 const handleSubmit = () => {
   if (!selectedClassId.value) return
-  emit('submit', selectedClassId.value)
+  emit('submit', Number(selectedClassId.value))
   emit('close')
 }
 </script> 

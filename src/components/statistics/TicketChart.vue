@@ -4,27 +4,21 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, onMounted, watch } from 'vue'
-import Chart from 'chart.js/auto'
+import { Chart, registerables } from 'chart.js'
 
-interface ChartDataset {
-  label: string
-  data: number[]
-  backgroundColor: string
-}
+Chart.register(...registerables)
 
-interface ChartData {
-  labels: string[]
-  datasets: ChartDataset[]
-}
+const props = defineProps({
+  chartData: {
+    type: Object,
+    default: null
+  }
+})
 
-const props = defineProps<{
-  chartData: ChartData | null
-}>()
-
-const chart = ref<HTMLCanvasElement | null>(null)
-let lineChart: Chart | null = null
+const chart = ref(null)
+let lineChart = null
 
 // 차트 생성 함수
 const createChart = () => {
