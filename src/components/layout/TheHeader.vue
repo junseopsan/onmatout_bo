@@ -6,6 +6,20 @@
           <div class="flex-shrink-0 flex items-center">
             <h1 class="text-xl font-bold text-primary-600">요가원 관리자</h1>
           </div>
+          <nav class="ml-10 flex items-center space-x-4">
+            <ul class="flex space-x-4">
+              <li>
+                <router-link to="/dashboard" class="text-gray-700 hover:text-primary-600 font-medium">대시보드</router-link>
+              </li>
+              <li>
+                <router-link to="/admin-manage" class="text-gray-700 hover:text-primary-600 font-medium">관리자 관리</router-link>
+              </li>
+              <li>
+                <router-link to="/member-manage" class="text-gray-700 hover:text-primary-600 font-medium">회원 관리</router-link>
+              </li>
+              <!-- 기타 메뉴 -->
+            </ul>
+          </nav>
         </div>
         <div class="flex items-center">
           <button class="btn btn-secondary">
@@ -17,23 +31,6 @@
   </header>
 </template>
 
-<script setup >
+<script setup>
 // 컴포넌트 로직
-</script>
-
-<v-navigation-drawer app>
-  <v-list>
-    <v-list-item-group>
-      <v-list-item to="/dashboard">
-        <v-list-item-title>대시보드</v-list-item-title>
-      </v-list-item>
-      <v-list-item to="/admin-manage">
-        <v-list-item-title>관리자 관리</v-list-item-title>
-      </v-list-item>
-      <v-list-item to="/member-manage">
-        <v-list-item-title>회원 관리</v-list-item-title>
-      </v-list-item>
-      <!-- 기타 메뉴 -->
-    </v-list-item-group>
-  </v-list>
-</v-navigation-drawer> 
+</script> 

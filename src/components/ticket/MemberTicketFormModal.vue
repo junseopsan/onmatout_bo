@@ -1,5 +1,5 @@
 <template>
-  <Modal title="수강권 등록" @close="$emit('close')">
+  <BaseModal :model-value="true" title="수강권 등록" @update:model-value="$emit('close')">
     <form @submit.prevent="handleSubmit" class="space-y-4">
       <div>
         <label for="ticketTypeId" class="block text-sm font-medium text-gray-700">
@@ -7,83 +7,66 @@
         </label>
         <select
           id="ticketTypeId"
-          v-model="formData.ticketTypeId"
+          v-model="form.ticketTypeId"
           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
           required
         >
-          <option value="">수강권 유형 선택</option>
-          <option
-            v-for="ticketType in ticketTypes"
-            :key="ticketType.id"
-            :value="ticketType.id"
-            :disabled="ticketType.status !== 'active'"
-          >
-            {{ ticketType.name }} ({{ ticketType.sessions }}회, {{ ticketType.durationDays }}일)
+          <option value="">수강권 유형을 선택하세요</option>
+          <option v-for="type in ticketTypes" :key="type.id" :value="type.id">
+            {{ type.name }}
           </option>
         </select>
       </div>
-
       <div>
         <label for="startDate" class="block text-sm font-medium text-gray-700">
           시작일 <span class="text-red-500">*</span>
         </label>
-        <input
+        <BaseInput
           id="startDate"
-          v-model="formData.startDate"
+          v-model="form.startDate"
           type="date"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-          :min="today"
           required
+          :error="errors.startDate"
         />
       </div>
-
-      <div v-if="selectedTicketType" class="bg-gray-50 p-4 rounded-md">
-        <h4 class="text-sm font-medium text-gray-700 mb-2">선택한 수강권 정보</h4>
-        <div class="grid grid-cols-2 gap-2 text-sm">
-          <div>
-            <p class="font-medium text-gray-500">수업 횟수</p>
-            <p>{{ selectedTicketType.sessions }}회</p>
-          </div>
-          <div>
-            <p class="font-medium text-gray-500">유효 기간</p>
-            <p>{{ selectedTicketType.durationDays }}일</p>
-          </div>
-          <div>
-            <p class="font-medium text-gray-500">만료일</p>
-            <p>{{ expiryDate }}</p>
-          </div>
-          <div>
-            <p class="font-medium text-gray-500">가격</p>
-            <p>{{ formatPrice(selectedTicketType.price) }}</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="flex justify-end space-x-3">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          @click="$emit('close')"
-        >
-          취소
-        </button>
-        <button
-          type="submit"
-          class="btn btn-primary"
-          :disabled="loading || !formData.ticketTypeId"
-        >
-          {{ loading ? '등록 중...' : '등록' }}
-        </button>
-      </div>
     </form>
-  </Modal>
+    <template #footer>
+      <button
+        type="button"
+        class="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+        @click="handleSubmit"
+      >
+        등록
+      </button>
+      <button
+        type="button"
+        class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:mt-0 sm:w-auto sm:text-sm"
+        @click="$emit('close')"
+      >
+        취소
+      </button>
+    </template>
+  </BaseModal>
 </template>
 
-<script setup >
-import { ref, reactive, computed, onMounted } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useTicketStore, type TicketType } from '@/stores/ticket'
-import Modal from '@/components/common/Modal.vue'
+<script setup lang="ts">
+import { ref, reactive, onMounted } from 'vue'
+import { useTicketStore } from '@/stores/ticket'
+import BaseModal from '@/components/common/BaseModal.vue'
+import BaseInput from '@/components/common/BaseInput.vue'
+
+interface TicketType {
+  id: number
+  name: string
+  price: number
+  count: number
+  validDays: number
+}
+
+interface MemberTicket {
+  ticketTypeId: number
+  startDate: string
+}
 
 const props = defineProps<{
   memberId: number
@@ -91,67 +74,57 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'submit', formData: { ticketTypeId: number; startDate: string }): void
+  (e: 'submit', data: MemberTicket): void
 }>()
 
 const ticketStore = useTicketStore()
-const { ticketTypes } = storeToRefs(ticketStore)
+const ticketTypes = ref<TicketType[]>([])
 
-const loading = ref(false)
-
-// 오늘 날짜 포맷 변환
-const today = computed(() => {
-  const date = new Date()
-  return date.toISOString().split('T')[0]
+const form = reactive<MemberTicket>({
+  ticketTypeId: 0,
+  startDate: new Date().toISOString().split('T')[0]
 })
 
-// 폼 데이터 초기화
-const formData = reactive({
+const errors = reactive({
   ticketTypeId: '',
-  startDate: today.value
+  startDate: ''
 })
 
-// 선택된 수강권 유형
-const selectedTicketType = computed(() => {
-  return ticketTypes.value.find(t => t.id === Number(formData.ticketTypeId)) || null
+onMounted(async () => {
+  try {
+    const response = await ticketStore.getTicketTypes()
+    ticketTypes.value = response
+  } catch (error) {
+    console.error('Error fetching ticket types:', error)
+  }
 })
 
-// 만료일 계산
-const expiryDate = computed(() => {
-  if (!selectedTicketType.value || !formData.startDate) return '-'
-  
-  const startDate = new Date(formData.startDate)
-  const endDate = new Date(startDate)
-  endDate.setDate(startDate.getDate() + selectedTicketType.value.durationDays)
-  
-  return endDate.toISOString().split('T')[0]
-})
+const validate = () => {
+  let isValid = true
+  errors.ticketTypeId = ''
+  errors.startDate = ''
 
-// 가격 포맷팅
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('ko-KR', { 
-    style: 'currency', 
-    currency: 'KRW'
-  }).format(price)
+  if (!form.ticketTypeId) {
+    errors.ticketTypeId = '수강권 유형을 선택해주세요'
+    isValid = false
+  }
+  if (!form.startDate) {
+    errors.startDate = '시작일을 입력해주세요'
+    isValid = false
+  }
+
+  return isValid
 }
 
-// 폼 제출 처리
 const handleSubmit = async () => {
-  if (!formData.ticketTypeId) return
-  
-  loading.value = true
+  if (!validate()) return
+
   try {
-    emit('submit', {
-      ticketTypeId: Number(formData.ticketTypeId),
-      startDate: formData.startDate
-    })
-  } finally {
-    loading.value = false
+    await ticketStore.createMemberTicket(props.memberId, form)
+    emit('submit', form)
+    emit('close')
+  } catch (error) {
+    console.error('Error creating member ticket:', error)
   }
 }
-
-// 초기 데이터 로드
-onMounted(() => {
-  ticketStore.fetchTicketTypes()
-})
 </script> 

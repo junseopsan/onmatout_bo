@@ -1,5 +1,5 @@
 <template>
-  <Modal title="QR 코드 생성" @close="$emit('close')">
+  <BaseModal :model-value="true" title="QR 코드 생성" @update:model-value="$emit('close')">
     <form @submit.prevent="handleSubmit" class="space-y-4">
       <div>
         <label for="class" class="block text-sm font-medium text-gray-700">
@@ -12,41 +12,40 @@
           required
         >
           <option value="">수업을 선택하세요</option>
-          <option
-            v-for="classItem in classes"
-            :key="classItem.id"
-            :value="classItem.id"
-          >
-            {{ classItem.name }} ({{ formatDateTime(classItem.dateTime) }})
+          <option v-for="classItem in classes" :key="classItem.id" :value="classItem.id">
+            {{ classItem.name }}
           </option>
         </select>
       </div>
-
-      <div class="flex justify-end space-x-3">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          @click="$emit('close')"
-        >
-          취소
-        </button>
-        <button
-          type="submit"
-          class="btn btn-primary"
-          :disabled="loading"
-        >
-          {{ loading ? '생성 중...' : '생성' }}
-        </button>
-      </div>
     </form>
-  </Modal>
+    <template #footer>
+      <button
+        type="button"
+        class="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+        @click="handleSubmit"
+      >
+        생성
+      </button>
+      <button
+        type="button"
+        class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:mt-0 sm:w-auto sm:text-sm"
+        @click="$emit('close')"
+      >
+        취소
+      </button>
+    </template>
+  </BaseModal>
 </template>
 
-<script setup >
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useClassStore } from '@/stores/class'
-import Modal from '@/components/common/Modal.vue'
-import { formatDateTime } from '@/utils/date'
+import BaseModal from '@/components/common/BaseModal.vue'
+
+interface Class {
+  id: number
+  name: string
+}
 
 const emit = defineEmits<{
   (e: 'close'): void
@@ -54,23 +53,21 @@ const emit = defineEmits<{
 }>()
 
 const classStore = useClassStore()
-const { classes } = storeToRefs(classStore)
+const classes = ref<Class[]>([])
+const selectedClassId = ref<number | ''>('')
 
-const selectedClassId = ref('')
-const loading = ref(false)
-
-const handleSubmit = async () => {
-  if (!selectedClassId.value) return
-
-  loading.value = true
+onMounted(async () => {
   try {
-    emit('submit', Number(selectedClassId.value))
-  } finally {
-    loading.value = false
+    const response = await classStore.getClasses()
+    classes.value = response
+  } catch (error) {
+    console.error('Error fetching classes:', error)
   }
-}
-
-onMounted(() => {
-  classStore.fetchClasses()
 })
+
+const handleSubmit = () => {
+  if (!selectedClassId.value) return
+  emit('submit', selectedClassId.value)
+  emit('close')
+}
 </script> 

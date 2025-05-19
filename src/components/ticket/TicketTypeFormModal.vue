@@ -1,120 +1,87 @@
 <template>
-  <Modal :title="ticketTypeData ? '수강권 유형 수정' : '수강권 유형 등록'" @close="$emit('close')">
+  <BaseModal :model-value="true" title="수강권 유형" @update:model-value="$emit('close')">
     <form @submit.prevent="handleSubmit" class="space-y-4">
       <div>
         <label for="name" class="block text-sm font-medium text-gray-700">
           이름 <span class="text-red-500">*</span>
         </label>
-        <input
+        <BaseInput
           id="name"
-          v-model="formData.name"
+          v-model="form.name"
           type="text"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
           required
+          :error="errors.name"
         />
       </div>
-
-      <div>
-        <label for="description" class="block text-sm font-medium text-gray-700">
-          설명
-        </label>
-        <textarea
-          id="description"
-          v-model="formData.description"
-          rows="3"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-        ></textarea>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label for="sessions" class="block text-sm font-medium text-gray-700">
-            수업 횟수 <span class="text-red-500">*</span>
-          </label>
-          <input
-            id="sessions"
-            v-model.number="formData.sessions"
-            type="number"
-            min="1"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-            required
-          />
-        </div>
-
-        <div>
-          <label for="durationDays" class="block text-sm font-medium text-gray-700">
-            유효 기간 (일) <span class="text-red-500">*</span>
-          </label>
-          <input
-            id="durationDays"
-            v-model.number="formData.durationDays"
-            type="number"
-            min="1"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-            required
-          />
-        </div>
-      </div>
-
       <div>
         <label for="price" class="block text-sm font-medium text-gray-700">
           가격 <span class="text-red-500">*</span>
         </label>
-        <div class="mt-1 relative rounded-md shadow-sm">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <span class="text-gray-500 sm:text-sm">₩</span>
-          </div>
-          <input
-            id="price"
-            v-model.number="formData.price"
-            type="number"
-            min="0"
-            class="pl-7 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-            placeholder="0"
-            required
-          />
-        </div>
-      </div>
-
-      <div>
-        <label for="status" class="block text-sm font-medium text-gray-700">
-          상태 <span class="text-red-500">*</span>
-        </label>
-        <select
-          id="status"
-          v-model="formData.status"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+        <BaseInput
+          id="price"
+          v-model="form.price"
+          type="number"
           required
-        >
-          <option value="active">활성</option>
-          <option value="inactive">비활성</option>
-        </select>
+          :error="errors.price"
+        />
       </div>
-
-      <div class="flex justify-end space-x-3">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          @click="$emit('close')"
-        >
-          취소
-        </button>
-        <button
-          type="submit"
-          class="btn btn-primary"
-          :disabled="loading"
-        >
-          {{ loading ? '저장 중...' : '저장' }}
-        </button>
+      <div>
+        <label for="count" class="block text-sm font-medium text-gray-700">
+          횟수 <span class="text-red-500">*</span>
+        </label>
+        <BaseInput
+          id="count"
+          v-model="form.count"
+          type="number"
+          required
+          :error="errors.count"
+        />
+      </div>
+      <div>
+        <label for="validDays" class="block text-sm font-medium text-gray-700">
+          유효기간(일) <span class="text-red-500">*</span>
+        </label>
+        <BaseInput
+          id="validDays"
+          v-model="form.validDays"
+          type="number"
+          required
+          :error="errors.validDays"
+        />
       </div>
     </form>
-  </Modal>
+    <template #footer>
+      <button
+        type="button"
+        class="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+        @click="handleSubmit"
+      >
+        저장
+      </button>
+      <button
+        type="button"
+        class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:mt-0 sm:w-auto sm:text-sm"
+        @click="$emit('close')"
+      >
+        취소
+      </button>
+    </template>
+  </BaseModal>
 </template>
 
-<script setup >
-import { ref, reactive, onMounted } from 'vue'
-import Modal from '@/components/common/Modal.vue'
-import { TicketType } from '@/stores/ticket'
+<script setup lang="ts">
+import { ref, reactive } from 'vue'
+import { useTicketStore } from '@/stores/ticket'
+import BaseModal from '@/components/common/BaseModal.vue'
+import BaseInput from '@/components/common/BaseInput.vue'
+
+interface TicketType {
+  id?: number
+  name: string
+  price: number
+  count: number
+  validDays: number
+}
 
 const props = defineProps<{
   ticketTypeData: TicketType | null
@@ -122,49 +89,65 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'submit', formData: Omit<TicketType, 'id' | 'createdAt' | 'updatedAt'>): void
+  (e: 'submit', data: TicketType): void
 }>()
 
-const loading = ref(false)
+const ticketStore = useTicketStore()
 
-// 폼 데이터 초기화
-const defaultFormData = {
-  name: '',
-  description: '',
-  sessions: 1,
-  durationDays: 30,
-  price: 0,
-  status: 'active' as const
-}
-
-const formData = reactive({...defaultFormData})
-
-// 수정 시 데이터 초기화
-onMounted(() => {
-  if (props.ticketTypeData) {
-    formData.name = props.ticketTypeData.name
-    formData.description = props.ticketTypeData.description
-    formData.sessions = props.ticketTypeData.sessions
-    formData.durationDays = props.ticketTypeData.durationDays
-    formData.price = props.ticketTypeData.price
-    formData.status = props.ticketTypeData.status
-  }
+const form = reactive<TicketType>({
+  name: props.ticketTypeData?.name || '',
+  price: props.ticketTypeData?.price || 0,
+  count: props.ticketTypeData?.count || 0,
+  validDays: props.ticketTypeData?.validDays || 0
 })
 
-// 폼 제출 처리
+const errors = reactive({
+  name: '',
+  price: '',
+  count: '',
+  validDays: ''
+})
+
+const validate = () => {
+  let isValid = true
+  errors.name = ''
+  errors.price = ''
+  errors.count = ''
+  errors.validDays = ''
+
+  if (!form.name) {
+    errors.name = '이름을 입력해주세요'
+    isValid = false
+  }
+  if (!form.price || form.price <= 0) {
+    errors.price = '가격을 입력해주세요'
+    isValid = false
+  }
+  if (!form.count || form.count <= 0) {
+    errors.count = '횟수를 입력해주세요'
+    isValid = false
+  }
+  if (!form.validDays || form.validDays <= 0) {
+    errors.validDays = '유효기간을 입력해주세요'
+    isValid = false
+  }
+
+  return isValid
+}
+
 const handleSubmit = async () => {
-  loading.value = true
+  if (!validate()) return
+
   try {
-    emit('submit', {
-      name: formData.name,
-      description: formData.description,
-      sessions: formData.sessions,
-      durationDays: formData.durationDays,
-      price: formData.price,
-      status: formData.status
-    })
-  } finally {
-    loading.value = false
+    if (props.ticketTypeData?.id) {
+      await ticketStore.updateTicketType(props.ticketTypeData.id, form)
+    } else {
+      await ticketStore.createTicketType(form)
+    }
+    emit('submit', form)
+    emit('close')
+  } catch (error) {
+    console.error('Error saving ticket type:', error)
   }
 }
 </script> 
