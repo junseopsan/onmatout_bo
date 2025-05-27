@@ -1,28 +1,27 @@
 <template>
   <div class="min-h-screen flex bg-gray-100">
     <!-- 사이드바 -->
-    <aside class="w-56 bg-gray-900 text-white flex flex-col py-6 px-4">
-      <div class="text-2xl font-bold mb-8 tracking-tight">ONMATOUT</div>
+    <aside class="w-56 bg-white text-primary-700 border-r flex flex-col py-6 px-4">      <div class="text-2xl font-bold mb-8 tracking-tight">ONMATOUT</div>
       <nav class="flex-1 space-y-2">
         <router-link
           to="/"
-          class="block py-2 px-3 rounded hover:bg-gray-800"
-          exact-active-class="bg-gray-800 font-semibold"
+          class="block py-2 px-3 rounded-lg hover:bg-primary-50 hover:text-primary-700 transition-colors"
+          exact-active-class="bg-primary-50 text-primary-700 font-bold shadow"
         >대시보드</router-link>
         <router-link
           to="/members"
-          class="block py-2 px-3 rounded hover:bg-gray-800"
-          exact-active-class="bg-gray-800 font-semibold"
+          class="block py-2 px-3 rounded-lg hover:bg-primary-50 hover:text-primary-700 transition-colors"
+          exact-active-class="bg-primary-50 text-primary-700 font-bold shadow"
         >회원 관리</router-link>
         <router-link
           to="/admin"
-          class="block py-2 px-3 rounded hover:bg-gray-800"
-          exact-active-class="bg-gray-800 font-semibold"
+          class="block py-2 px-3 rounded-lg hover:bg-primary-50 hover:text-primary-700 transition-colors"
+          exact-active-class="bg-primary-50 text-primary-700 font-bold shadow"
         >관리자 관리</router-link>
         <router-link
           to="/classes"
-          class="block py-2 px-3 rounded hover:bg-gray-800"
-          exact-active-class="bg-gray-800 font-semibold"
+          class="block py-2 px-3 rounded-lg hover:bg-primary-50 hover:text-primary-700 transition-colors"
+          exact-active-class="bg-primary-50 text-primary-700 font-bold shadow"
         >수업 관리</router-link>
         <!-- <router-link
           to="/qr"

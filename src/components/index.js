@@ -1,6 +1,6 @@
 // 레이아웃 컴포넌트
-import TheHeader from './layout/TheHeader.vue'
-import TheSidebar from './layout/TheSidebar.vue'
+import TheHeader from '../layouts/TheHeader.vue'
+import TheSidebar from '../layouts/TheSidebar.vue'
 
 // 공통 컴포넌트
 import BaseInput from './common/BaseInput.vue'
